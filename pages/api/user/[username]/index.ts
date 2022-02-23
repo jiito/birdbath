@@ -2,11 +2,18 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getUserByName } from "../../../../services/twitter";
 import { UserV2Result } from "twitter-api-v2";
+import { getToken } from "next-auth/jwt";
+import { getSession } from "next-auth/react";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<UserV2Result>
 ) {
+  const session = await getSession({ req });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+  console.log("session", session);
+  console.log("token", token);
   const username = req.query.username as string;
   const userRes = await getUserByName(username);
   res.status(200).json(userRes);
