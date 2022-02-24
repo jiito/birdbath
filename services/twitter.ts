@@ -19,7 +19,6 @@ class Twitter {
   login = (oauth_k: string, oauth_s: string) => {
     this.oauth_key = oauth_k;
     this.oauth_secret = oauth_s;
-    console.log(oauth_k, oauth_s);
 
     this.client = new TwitterApi({
       ...twitterTokens,
@@ -29,7 +28,8 @@ class Twitter {
   };
   getUserByName = (name: string) => this.client.v2.userByUsername(name);
 
-  getTweetsForUserById = (id: string) => this.client.v2.userTimeline(id);
+  getTweetsForUserById = (id: string) =>
+    this.client.v2.userTimeline(id, { "tweet.fields": ["public_metrics"] });
 
   filterTweets = (filter: Filter, tweets: TweetV2[]) => {
     return tweets.filter(filter);
