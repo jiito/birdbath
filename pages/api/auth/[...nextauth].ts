@@ -16,11 +16,6 @@ export default NextAuth({
         console.log(account);
         token.oauth_token = account.oauth_token;
         token.oauth_secret = account.oauth_token_secret;
-        TwitterClient.login(
-          account!.oauth_token as string,
-          account!.oauth_token_secret as string
-        );
-        console.log("logged in");
       }
 
       return token;
