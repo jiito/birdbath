@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import TwitterProvider from "next-auth/providers/twitter";
+import { TwitterClient } from "services/twitter";
 
 export default NextAuth({
   // Configure one or more authentication providers
@@ -12,9 +13,16 @@ export default NextAuth({
   callbacks: {
     async jwt({ token, account }) {
       if (account) {
-        token.accessToken = account.oauth_token;
-        token.tokenSecret = account.oauth_token_secret;
+        console.log(account);
+        token.oauth_token = account.oauth_token;
+        token.oauth_secret = account.oauth_token_secret;
+        TwitterClient.login(
+          account!.oauth_token as string,
+          account!.oauth_token_secret as string
+        );
+        console.log("logged in");
       }
+
       return token;
     },
   },
