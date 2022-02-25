@@ -20,6 +20,13 @@ const Home: NextPage = () => {
       </div>
       <button onClick={() => signIn()}>Sign In!</button>
       <button onClick={() => signOut()}>Sign out!</button>
+      <button
+        onClick={() =>
+          fetch(`api/tweets?id=1495475945121193995`, { method: "DELETE" })
+        }
+      >
+        DELETE TWEET
+      </button>
     </div>
   );
 };
