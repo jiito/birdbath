@@ -34,6 +34,24 @@ class Twitter {
   filterTweets = (filter: Filter, tweets: TweetV2[]) => {
     return tweets.filter(filter);
   };
+
+  deleteTweets = (tweets: TweetV2[]) => {
+    tweets.forEach(async (tweet) => {
+      try {
+        return await this.deleteTweetById(tweet.id);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  };
+
+  deleteTweetById = async (tweetId: string) => {
+    const res = await this.client.v2.deleteTweet(tweetId);
+    if (!res.data.deleted) {
+      throw new Error(`Unable to delete tweet with ID: ${tweetId}`);
+    }
+    return { deleted: res.data.deleted, id: tweetId };
+  };
 }
 let TwitterClient = new Twitter();
 
