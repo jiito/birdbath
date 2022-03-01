@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import TwitterProvider from "next-auth/providers/twitter";
-import { TwitterClient } from "services/twitter";
 
 export default NextAuth({
   // Configure one or more authentication providers
