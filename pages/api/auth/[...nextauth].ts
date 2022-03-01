@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
 import TwitterProvider from "next-auth/providers/twitter";
+import clientPromise from "utils/mongodb";
+import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
 
 export default NextAuth({
   // Configure one or more authentication providers
@@ -9,6 +11,7 @@ export default NextAuth({
       clientSecret: process.env.TWITTER_API_KEY_SECRET || "",
     }),
   ],
+  adapter: MongoDBAdapter(clientPromise),
   callbacks: {
     async jwt({ token, account }) {
       if (account) {
