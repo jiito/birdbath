@@ -14,13 +14,22 @@ export default NextAuth({
   adapter: MongoDBAdapter(clientPromise),
   callbacks: {
     async jwt({ token, account }) {
-      if (account) {
-        console.log(account);
-        token.oauth_token = account.oauth_token;
-        token.oauth_secret = account.oauth_token_secret;
+      // Persist the userId to token
+      if (token) {
+        token.userId = token.sub;
       }
-
       return token;
+    },
+
+    async session({ session, token, user }) {
+      console.log(user);
+      session.userId = user.id;
+      console.log(session);
+      return session;
+    },
+    async signIn({ user, account, profile, email, credentials }) {
+      console.log(user, account, profile, email, credentials);
+      return true;
     },
   },
   secret: process.env.NEXTAUTH_SECRET,

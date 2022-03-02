@@ -1,17 +1,23 @@
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { getToken } from "next-auth/jwt";
-import Twitter from "next-auth/providers/twitter";
 import { getSession } from "next-auth/react";
 import TwitterClient from "services/twitter";
+import { UserRepository } from "storage/UserRepository";
+import dbConnect from "utils/mongoose";
 
 export const apiHandlerWithTwitter = (handler: NextApiHandler) => {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const session = await getSession({ req });
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const token = await getToken({ req });
+    console.log(session);
+
+    const account = await UserRepository.getUserTokens(
+      session!.userId as string
+    );
 
     TwitterClient.login(
-      token!.accessToken as string,
-      token!.tokenSecret as string
+      account!.oauth_token as string,
+      account!.oauth_token_secret as string
     );
 
     try {
