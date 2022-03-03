@@ -28,8 +28,14 @@ class Twitter {
   };
   getUserByName = (name: string) => this.client.v2.userByUsername(name);
 
-  getTweetsForUserById = (id: string) =>
-    this.client.v2.userTimeline(id, { "tweet.fields": ["public_metrics"] });
+  getTweetsForUserById = async (id: string, total: number = 3200) => {
+    const paginator = await this.client.v2.userTimeline(id, {
+      "tweet.fields": ["public_metrics"],
+    });
+    await paginator.fetchLast(total);
+
+    return paginator.data.data;
+  };
 
   filterTweets = (filter: Filter, tweets: TweetV2[]) => {
     return tweets.filter(filter);
@@ -51,6 +57,17 @@ class Twitter {
       throw new Error(`Unable to delete tweet with ID: ${tweetId}`);
     }
     return { deleted: res.data.deleted, id: tweetId };
+  };
+
+  getAndFilterTweets = async (
+    userId: string,
+    maxResults: number,
+    filter: Filter
+  ) => {
+    return this.filterTweets(
+      filter,
+      await this.getTweetsForUserById(userId, maxResults)
+    );
   };
 }
 let TwitterClient = new Twitter();
