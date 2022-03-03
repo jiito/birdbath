@@ -31,11 +31,17 @@ const SignOut = ({ profilePic }: { profilePic: string }) => {
   return (
     <>
       <div
-        className="rounded bg-blue-400 px-4 py-2 text-white mt-8"
+        className="flex rounded bg-blue-400 px-4 py-2 text-white cursor-pointer items-center"
         onClick={() => signOut()}
       >
-        <Image src={profilePic} className="rounded-full" width={60} />
-        Sign out
+        <Image
+          src={profilePic}
+          width={25}
+          height={25}
+          layout="fixed"
+          className="rounded-full "
+        />
+        <span className="ml-2">Sign out</span>
       </div>
     </>
   );
