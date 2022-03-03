@@ -8,17 +8,13 @@ import dbConnect from "utils/mongoose";
 export const apiHandlerWithTwitter = (handler: NextApiHandler) => {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const session = await getSession({ req });
-    const token = await getToken({ req });
     console.log(session);
 
-    const account = await UserRepository.getUserTokens(
+    const { token, secret } = await UserRepository.getTwitterTokens(
       session!.userId as string
     );
 
-    TwitterClient.login(
-      account!.oauth_token as string,
-      account!.oauth_token_secret as string
-    );
+    TwitterClient.login(token as string, secret as string);
 
     try {
       await handler(req, res);

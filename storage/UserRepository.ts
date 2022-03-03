@@ -3,9 +3,17 @@ import { UsersModel } from "models/UserModel";
 import dbConnect from "utils/mongoose";
 
 export class UserRepository {
-  static getUserTokens = async (userId: string) => {
+  static getUserAccount = async (userId: string) => {
     await dbConnect();
 
     return AccountsModel.findOne({ userId });
+  };
+  static getTwitterTokens = async (userId: string) => {
+    const account = await this.getUserAccount(userId);
+
+    return {
+      token: account.oauth_token,
+      secret: account.oauth_token_secret,
+    };
   };
 }
