@@ -9,8 +9,9 @@ export class UserRepository {
     return AccountsModel.findOne({ userId });
   };
   static getTwitterTokens = async (userId: string) => {
-    const account = await this.getUserAccount(userId);
+    const account = await UserRepository.getUserAccount(userId);
 
+    console.log(account);
     return {
       token: account.oauth_token,
       secret: account.oauth_token_secret,
