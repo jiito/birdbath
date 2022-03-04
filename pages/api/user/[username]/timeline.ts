@@ -9,13 +9,11 @@ export default apiHandlerWithTwitter(async function handler(
   req: NextApiRequest,
   res: NextApiResponse<TweetV2[]>
 ) {
-  const likes = parseInt(req.query.likes as string) || Infinity;
+  const filter = FilterFacotry.getFilter(req.query.filter! as string);
+  const total = parseInt(req.query.total! as string);
   const username = req.query.username as string;
   const id = await (await TwitterClient.getUserByName(username)).data.id;
-  const userRes = await TwitterClient.getTweetsForUserById(id);
-  const filteredTweets = await TwitterClient.filterTweets(
-    FilterFacotry.likesFilter(likes),
-    userRes.tweets
-  );
+  const tweets = await TwitterClient.getTweetsForUserById(id, total);
+  const filteredTweets = await TwitterClient.filterTweets(filter, tweets);
   res.status(200).json(filteredTweets);
 });
