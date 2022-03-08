@@ -1,5 +1,7 @@
+import { AccountsModel } from "models/AccountModel";
 import { TweetV2, TwitterApi, TwitterApiTokens } from "twitter-api-v2";
 import { Filter } from "utils/FilterFactory";
+import dbConnect from "utils/mongoose";
 
 const twitterTokens = {
   appKey: process.env.TWITTER_API_KEY,
@@ -28,11 +30,21 @@ class Twitter {
   };
   getUserByName = (name: string) => this.client.v2.userByUsername(name);
 
+  getTwitterIdByUserId = async (userId: string) => {
+    await dbConnect();
+
+    const account = await AccountsModel.findOne({ userId });
+    console.log("Account:", account);
+    // have to use ._doc because it is defined by NextAuth
+    return account._doc.providerAccountId;
+  };
+
   getTweetsForUserById = async (id: string, total: number = 3200) => {
     const paginator = await this.client.v2.userTimeline(id, {
       "tweet.fields": ["public_metrics"],
     });
     await paginator.fetchLast(total);
+    console.log(paginator.data.data.length);
 
     return paginator.data.data;
   };
@@ -57,6 +69,16 @@ class Twitter {
       throw new Error(`Unable to delete tweet with ID: ${tweetId}`);
     }
     return { deleted: res.data.deleted, id: tweetId };
+  };
+
+  deleteTweetsWithFilter = async (
+    userId: string,
+    maxResults: number,
+    filter: Filter
+  ) => {
+    const tweets = await this.getAndFilterTweets(userId, maxResults, filter);
+
+    await this.deleteTweets(tweets);
   };
 
   getAndFilterTweets = async (
