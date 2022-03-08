@@ -11,7 +11,6 @@ export class UserRepository {
   static getTwitterTokens = async (userId: string) => {
     const account = await UserRepository.getUserAccount(userId);
 
-    console.log(account);
     return {
       token: account.oauth_token,
       secret: account.oauth_token_secret,

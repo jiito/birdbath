@@ -22,13 +22,10 @@ export default NextAuth({
     },
 
     async session({ session, token, user }) {
-      console.log(user);
       session.userId = user.id;
-      console.log(session);
       return session;
     },
     async signIn({ user, account, profile, email, credentials }) {
-      console.log(user, account, profile, email, credentials);
       return true;
     },
   },

@@ -5,6 +5,7 @@ const AccountsSchema = new Schema({
   oauth_token: String,
   oauth_token_secret: String,
   provider: String,
+  providerAccountId: String,
 });
 
 export const AccountsModel =
