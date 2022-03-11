@@ -11,19 +11,19 @@ export class FilterFacotry {
   static likesFilter = (threshold: string) => {
     const x = parseInt(threshold);
     return ((tweet: TweetV2) => {
-      return tweet.public_metrics?.like_count! > x;
+      return tweet.public_metrics?.like_count! < x;
     }) as Filter;
   };
   static retweetsFilter = (threshold: string) => {
     const x = parseInt(threshold);
     return ((tweet: TweetV2) => {
-      return tweet.public_metrics?.retweet_count! > x;
+      return tweet.public_metrics?.retweet_count! < x;
     }) as Filter;
   };
   static dateFilter = (threshold: string) => {
     const d = Date.parse(threshold);
     return ((tweet: TweetV2) => {
-      return Date.parse(tweet.created_at!) > d;
+      return Date.parse(tweet.created_at!) < d;
     }) as Filter;
   };
 }
