@@ -1,7 +1,9 @@
 import { AccountsModel } from "models/AccountModel";
+import { TweetUserTimelineV2Paginator } from "twitter-api-v2/dist/paginators/tweet.paginator.v2";
 import { TweetV2, TwitterApi, TwitterApiTokens } from "twitter-api-v2";
 import { Filter } from "utils/FilterFactory";
 import dbConnect from "utils/mongoose";
+import JobService from "./JobService";
 
 const twitterTokens = {
   appKey: process.env.TWITTER_API_KEY,
@@ -15,6 +17,7 @@ class Twitter {
   oauth_key: string | undefined;
   oauth_secret: string | undefined;
   client: TwitterApi;
+  userTimelinePaginator: TweetUserTimelineV2Paginator | undefined;
   constructor() {
     this.client = new TwitterApi(twitterTokens);
   }
@@ -39,28 +42,42 @@ class Twitter {
     return account._doc.providerAccountId;
   };
 
-  getTweetsForUserById = async (id: string, total: number = 3200) => {
-    const paginator = await this.client.v2.userTimeline(id, {
+  getPaginatorForUser = async (id: string, max_results: number = 20) => {
+    return this.client.v2.userTimeline(id, {
       "tweet.fields": ["public_metrics"],
+      max_results,
     });
-    await paginator.fetchLast(total);
-    console.log(paginator.data.data.length);
+  };
 
-    return paginator.data.data;
+  fetchTweets = async (userId: string, maxResults: number) => {
+    JobService.addJob("fetchTweets", { userId, maxResults });
+    if (!this.userTimelinePaginator) {
+      this.userTimelinePaginator = await this.getPaginatorForUser(
+        userId,
+        maxResults
+      );
+
+      this.userTimelinePaginator.fetchLast(maxResults);
+    } else {
+      await this.fetchNextPage(maxResults);
+    }
+    return this.userTimelinePaginator.data.data;
+  };
+
+  fetchNextPage = (maxResults: number) => {
+    return this.userTimelinePaginator?.fetchNext(maxResults);
   };
 
   filterTweets = (filter: Filter, tweets: TweetV2[]) => {
     return tweets.filter(filter);
   };
 
-  deleteTweets = (tweets: TweetV2[]) => {
-    tweets.forEach(async (tweet) => {
-      try {
-        return await this.deleteTweetById(tweet.id);
-      } catch (error) {
-        console.error(error);
-      }
-    });
+  deleteTweets = async (tweets: TweetV2[], chunkSize: number = 15) => {
+    for (let i = 0; i < tweets.length; i + chunkSize) {
+      await JobService.addJob("deleteTweets", {
+        tweets: tweets.slice(i, i + chunkSize),
+      });
+    }
   };
 
   deleteTweetById = async (tweetId: string) => {
@@ -88,7 +105,7 @@ class Twitter {
   ) => {
     return this.filterTweets(
       filter,
-      await this.getTweetsForUserById(userId, maxResults)
+      await this.fetchTweets(userId, maxResults)
     );
   };
 }
