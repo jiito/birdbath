@@ -11,4 +11,4 @@ export class JobService {
   }
 }
 
-export default new JobService();
+export const Jobs = new JobService();
