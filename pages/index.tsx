@@ -1,6 +1,8 @@
+import { AuthButtons } from "components/AuthButtons";
 import type { NextPage } from "next";
 import { signIn, useSession } from "next-auth/react";
 import Head from "next/head";
+import Link from "next/link";
 
 const Home: NextPage = () => {
   const session = useSession();
@@ -16,19 +18,10 @@ const Home: NextPage = () => {
       </Head>
 
       <div className="flex flex-col items-center mt-52">
-        <div className="title text-6xl font-bold">birdbath</div>
-        {session ? (
-          <div className="rounded bg-blue-400 px-4 py-2 text-white mt-8">
-            {session.data?.user!.name}
-          </div>
-        ) : (
-          <button
-            onClick={() => signIn()}
-            className="rounded bg-blue-400 px-4 py-2 text-white mt-8"
-          >
-            Login with Twitter
-          </button>
-        )}
+        <Link href={"/bath"}>
+          <div className="title text-6xl font-bold">birdbath</div>
+        </Link>
+        <AuthButtons />
       </div>
     </div>
   );

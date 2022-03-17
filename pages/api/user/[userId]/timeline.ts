@@ -13,7 +13,7 @@ export default apiHandlerWithTwitter(async function handler(
   const total = parseInt(req.query.total! as string);
   const userId = req.query.userId as string;
   const twitterId = await TwitterClient.getTwitterIdByUserId(userId);
-  const tweets = await TwitterClient.getTweetsForUserById(twitterId, total);
+  const tweets = await TwitterClient.fetchTweets(twitterId, total);
   const filteredTweets = await TwitterClient.filterTweets(filter, tweets);
   res.status(200).json({ tweets: filteredTweets });
 });
