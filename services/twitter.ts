@@ -3,7 +3,7 @@ import { TweetUserTimelineV2Paginator } from "twitter-api-v2/dist/paginators/twe
 import { TweetV2, TwitterApi, TwitterApiTokens } from "twitter-api-v2";
 import { Filter } from "utils/FilterFactory";
 import dbConnect from "utils/mongoose";
-import JobService from "./JobService";
+import { Jobs } from "./JobService";
 
 const twitterTokens = {
   appKey: process.env.TWITTER_API_KEY,
@@ -43,6 +43,7 @@ class Twitter {
   };
 
   getPaginatorForUser = async (id: string, max_results: number = 20) => {
+    console.log(id, max_results);
     return this.client.v2.userTimeline(id, {
       "tweet.fields": ["public_metrics"],
       max_results,
@@ -50,17 +51,17 @@ class Twitter {
   };
 
   fetchTweets = async (userId: string, maxResults: number) => {
-    JobService.addJob("fetchTweets", { userId, maxResults });
     if (!this.userTimelinePaginator) {
       this.userTimelinePaginator = await this.getPaginatorForUser(
         userId,
         maxResults
       );
 
-      this.userTimelinePaginator.fetchLast(maxResults);
+      await this.userTimelinePaginator.fetchLast(maxResults);
     } else {
       await this.fetchNextPage(maxResults);
     }
+    console.log(this.userTimelinePaginator.data.data);
     return this.userTimelinePaginator.data.data;
   };
 
@@ -73,11 +74,13 @@ class Twitter {
   };
 
   deleteTweets = async (tweets: TweetV2[], chunkSize: number = 15) => {
-    for (let i = 0; i < tweets.length; i + chunkSize) {
-      await JobService.addJob("deleteTweets", {
+    console.log("[deleting]: ", tweets.length, "tweets");
+    for (let i = 0; i < tweets.length; i += chunkSize) {
+      await Jobs.addJob("deleteTweets", {
         tweets: tweets.slice(i, i + chunkSize),
       });
     }
+    return tweets;
   };
 
   deleteTweetById = async (tweetId: string) => {
@@ -95,7 +98,8 @@ class Twitter {
   ) => {
     const tweets = await this.getAndFilterTweets(userId, maxResults, filter);
 
-    await this.deleteTweets(tweets);
+    const delTweets = await this.deleteTweets(tweets);
+    return delTweets;
   };
 
   getAndFilterTweets = async (
