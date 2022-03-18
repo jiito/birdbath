@@ -102,6 +102,33 @@ class Twitter {
     return delTweets;
   };
 
+  deleteTweetsPaginator = async (
+    userId: string,
+    perPage: number = 15,
+    upTo: number,
+    filter: Filter
+  ) => {
+    const tweetPage = await this.getAndFilterTweets(
+      userId,
+      Math.min(perPage, upTo),
+      filter
+    );
+
+    const deletedTweets = await this.deleteTweets(tweetPage);
+
+    console.log(deletedTweets);
+
+    await setTimeout(() => console.log("finished"), 10000);
+
+    if (tweetPage.length < upTo) {
+      const remaining = upTo - tweetPage.length;
+      deletedTweets.concat(
+        await this.deleteTweetsPaginator(userId, perPage, remaining, filter)
+      );
+    }
+
+    return deletedTweets;
+  };
   getAndFilterTweets = async (
     userId: string,
     maxResults: number,
