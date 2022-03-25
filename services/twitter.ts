@@ -1,6 +1,12 @@
 import { AccountsModel } from "models/AccountModel";
 import { TweetUserTimelineV2Paginator } from "twitter-api-v2/dist/paginators/tweet.paginator.v2";
-import { TweetV2, TwitterApi, TwitterApiTokens } from "twitter-api-v2";
+import {
+  OembedTweetV1Result,
+  TweetV2,
+  TweetV2ListTweetsPaginator,
+  TwitterApi,
+  TwitterApiTokens,
+} from "twitter-api-v2";
 import { Filter } from "utils/FilterFactory";
 import dbConnect from "utils/mongoose";
 import { Jobs } from "./JobService";
@@ -61,7 +67,7 @@ class Twitter {
     } else {
       await this.fetchNextPage(maxResults);
     }
-    console.log(this.userTimelinePaginator.data.data);
+
     return this.userTimelinePaginator.data.data;
   };
 
@@ -116,10 +122,6 @@ class Twitter {
 
     const deletedTweets = await this.deleteTweets(tweetPage);
 
-    console.log(deletedTweets);
-
-    await setTimeout(() => console.log("finished"), 10000);
-
     if (tweetPage.length < upTo) {
       const remaining = upTo - tweetPage.length;
       deletedTweets.concat(
@@ -129,16 +131,41 @@ class Twitter {
 
     return deletedTweets;
   };
-  getAndFilterTweets = async (
+  async getAndFilterTweets(
     userId: string,
-    maxResults: number,
+    total: number,
     filter: Filter
-  ) => {
-    return this.filterTweets(
-      filter,
-      await this.fetchTweets(userId, maxResults)
-    );
-  };
+  ): Promise<TweetV2[]> {
+    const tweets = await this.fetchTweets(userId, total);
+    console.log("fetched tweets legnth: ", tweets.length);
+    const filteredTweets = this.filterTweets(filter, tweets);
+
+    if (filteredTweets.length < total) {
+      console.log("length", filteredTweets.length, "total", total);
+      console.log("Calling");
+      return [
+        ...filteredTweets,
+        ...(await this.getAndFilterTweets(
+          userId,
+          total - filteredTweets.length,
+          filter
+        )),
+      ];
+    }
+
+    console.log("TweetId: ", filteredTweets[0].id);
+    console.log("Calling:", await this.getEmbed(filteredTweets[0].id));
+
+    return filteredTweets.slice(-1 * total);
+  }
+  async transformToEmbeds(tweets: TweetV2[]) {
+    return tweets.map(async (tweet) => await this.getEmbed(tweet.id));
+  }
+
+  async getEmbed(tweetId: string) {
+    console.log(tweetId);
+    return this.client.v1.oembedTweet(tweetId);
+  }
 }
 let TwitterClient = new Twitter();
 
