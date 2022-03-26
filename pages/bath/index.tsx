@@ -8,7 +8,7 @@ const BathPage = () => {
   const session = useSession();
   const [userId, setUserId] = useState<string>();
   const [totalTweets, setTotalTweets] = useState<number>(11);
-  const [filterType, setFilterType] = useState<string>("likes");
+  const [filterType, setFilterType] = useState<string>("like");
   const [thresholdNumber, setThresholdNumber] = useState<number>(2);
   useEffect(() => {
     if (session.status === "authenticated") {
@@ -17,9 +17,9 @@ const BathPage = () => {
     }
   }, [session]);
   const [loadedTweets, setLoadedTweets] = useState<OembedTweetV1Result[]>();
-  const onFormSubmit = async (values: any) => {
+  const onFormSubmit = async () => {
     const res = await fetch(
-      `api/user/${userId}/timeline?filter=${values.filter}:${values.threshold}&total=${values.total}&type=EMBED`
+      `api/user/${userId}/timeline?filter=${filterType}:${thresholdNumber}&total=${totalTweets}&type=EMBED`
     );
     const data = await res.json();
     console.log(data);
@@ -30,6 +30,17 @@ const BathPage = () => {
     // delele all the tweets from a filter
     console.log(filterType, thresholdNumber);
   };
+
+  useEffect(() => {
+    const loadScript = function (src: string) {
+      var tag = document.createElement("script");
+      tag.src = src;
+      var body = document.getElementsByTagName("body")[0];
+      body.appendChild(tag);
+    };
+
+    loadScript("https://platform.twitter.com/widgets.js");
+  }, [loadedTweets]);
   return (
     <Layout>
       <div className="max-w-2xl mx-auto my-20 ">
@@ -72,6 +83,7 @@ const BathPage = () => {
               <button
                 className=" text-gray-50 py-1.5 px-3 mr-4 rounded bg-gradient-to-bl from-green-300 via-blue-500 to-purple-600"
                 disabled={!userId}
+                onClick={() => onFormSubmit()}
               >
                 let's see the damage
               </button>
@@ -84,7 +96,7 @@ const BathPage = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center mt-4 space-y-4">
+        <div className="flex flex-col items-center justify-center w-full mt-4 space-y-4">
           {loadedTweets &&
             loadedTweets.map((t, i) => (
               <div dangerouslySetInnerHTML={{ __html: t.html }} key={i} />
