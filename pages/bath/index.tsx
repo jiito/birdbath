@@ -12,23 +12,27 @@ const BathPage = () => {
   const [thresholdNumber, setThresholdNumber] = useState<number>(2);
   useEffect(() => {
     if (session.status === "authenticated") {
-      console.log(session);
       setUserId((session.data as any).userId!);
     }
   }, [session]);
   const [loadedTweets, setLoadedTweets] = useState<OembedTweetV1Result[]>();
-  const onFormSubmit = async () => {
+  const tweetFetch = async (method: string = "GET") => {
     const res = await fetch(
-      `api/user/${userId}/timeline?filter=${filterType}:${thresholdNumber}&total=${totalTweets}&type=EMBED`
+      `api/user/tweets?filter=${filterType}:${thresholdNumber}&total=${totalTweets}&type=EMBED`,
+      {
+        method,
+      }
     );
     const data = await res.json();
-    console.log(data);
-    setLoadedTweets(data.tweets);
+    if (method === "GET") {
+      setLoadedTweets(data.tweets);
+    }
+    return data;
   };
 
-  const deleteTweets = () => {
-    // delele all the tweets from a filter
-    console.log(filterType, thresholdNumber);
+  const deleteTweets = async () => {
+    // delele all the tweets from the filter
+    tweetFetch("DELETE");
   };
 
   useEffect(() => {
@@ -83,7 +87,7 @@ const BathPage = () => {
               <button
                 className=" text-gray-50 py-1.5 px-3 mr-4 rounded bg-gradient-to-bl from-green-300 via-blue-500 to-purple-600"
                 disabled={!userId}
-                onClick={() => onFormSubmit()}
+                onClick={() => tweetFetch()}
               >
                 let's see the damage
               </button>
@@ -99,7 +103,11 @@ const BathPage = () => {
         <div className="flex flex-col items-center justify-center w-full mt-4 space-y-4">
           {loadedTweets &&
             loadedTweets.map((t, i) => (
-              <div dangerouslySetInnerHTML={{ __html: t.html }} key={i} />
+              <div
+                className="self-center w-full m-auto"
+                dangerouslySetInnerHTML={{ __html: t.html }}
+                key={i}
+              />
             ))}
         </div>
       </div>

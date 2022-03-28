@@ -18,7 +18,6 @@ export default apiHandlerWithTwitter(async function handler(
   const total = parseInt(req.query.total! as string);
   const userId = req.query.userId as string;
   const type: ResponseTypes = req.query.type as ResponseTypes;
-  console.log(type, type === ResponseTypes.Embed);
   const twitterId = await TwitterClient.getTwitterIdByUserId(userId);
   const tweets = await TwitterClient.getAndFilterTweets(
     twitterId,
