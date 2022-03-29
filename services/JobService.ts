@@ -11,4 +11,4 @@ export class JobService {
   }
 }
 
-export const Jobs = new JobService();
+export const JobQueue = new JobService();
