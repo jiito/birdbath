@@ -21,4 +21,8 @@ export class JobQueues {
   private static mapping: Map<QUEUES, JobQueue> = new Map([
     [QUEUES.DELETE_TWEETS, new JobQueue(QUEUES.DELETE_TWEETS, "userId")],
   ]);
+
+  public static get(queue: QUEUES): JobQueue {
+    return this.mapping.get(queue)!;
+  }
 }
