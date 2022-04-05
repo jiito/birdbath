@@ -9,7 +9,7 @@ import {
 } from "twitter-api-v2";
 import { Filter } from "utils/FilterFactory";
 import dbConnect from "utils/mongoose";
-import { Jobs } from "./JobService";
+import { JobQueues, QUEUES } from "./JobService";
 
 const twitterTokens = {
   appKey: process.env.TWITTER_API_KEY,
@@ -52,6 +52,7 @@ class Twitter {
     console.log(id, max_results);
     return this.client.v2.userTimeline(id, {
       "tweet.fields": ["public_metrics"],
+      "user.fields": ["id"],
       max_results,
     });
   };
@@ -79,14 +80,10 @@ class Twitter {
     return tweets.filter(filter);
   };
 
-  deleteTweets = async (tweets: TweetV2[], chunkSize: number = 15) => {
-    console.log("[deleting]: ", tweets.length, "tweets");
-    for (let i = 0; i < tweets.length; i += chunkSize) {
-      await Jobs.addJob("deleteTweets", {
-        tweets: tweets.slice(i, i + chunkSize),
-      });
-    }
-    return tweets;
+  addTweetsToDeleteQueue = async (tweets: TweetV2[]) => {
+    tweets.forEach((tweet) =>
+      JobQueues.get(QUEUES.DELETE_TWEETS).add("deleteTweet", tweet)
+    );
   };
 
   deleteTweetById = async (tweetId: string) => {
@@ -104,32 +101,39 @@ class Twitter {
   ) => {
     const tweets = await this.getAndFilterTweets(userId, maxResults, filter);
 
-    const delTweets = await this.deleteTweets(tweets);
+    const delTweets = await this.addTweetsToDeleteQueue(tweets);
     return delTweets;
   };
 
-  deleteTweetsPaginator = async (
+  // TODO: find better name
+  deleteTweetsWithPaginator = async (
     userId: string,
     perPage: number = 15,
     upTo: number,
     filter: Filter
   ) => {
-    const tweetPage = await this.getAndFilterTweets(
+    let tweetPage = await this.getAndFilterTweets(
       userId,
       Math.min(perPage, upTo),
       filter
     );
+    console.log("tweetPage: ", tweetPage);
 
-    const deletedTweets = await this.deleteTweets(tweetPage);
+    await this.addTweetsToDeleteQueue(tweetPage);
 
     if (tweetPage.length < upTo) {
-      const remaining = upTo - tweetPage.length;
-      deletedTweets.concat(
-        await this.deleteTweetsPaginator(userId, perPage, remaining, filter)
+      const remainingCount = upTo - tweetPage.length;
+
+      const remainingTweets = await this.deleteTweetsWithPaginator(
+        userId,
+        perPage,
+        remainingCount,
+        filter
       );
+      tweetPage.concat(remainingTweets);
     }
 
-    return deletedTweets;
+    return tweetPage;
   };
   async getAndFilterTweets(
     userId: string,
@@ -137,12 +141,9 @@ class Twitter {
     filter: Filter
   ): Promise<TweetV2[]> {
     const tweets = await this.fetchTweets(userId, total);
-    console.log("fetched tweets legnth: ", tweets.length);
     const filteredTweets = this.filterTweets(filter, tweets);
 
     if (filteredTweets.length < total) {
-      console.log("length", filteredTweets.length, "total", total);
-      console.log("Calling");
       return [
         ...filteredTweets,
         ...(await this.getAndFilterTweets(
@@ -153,12 +154,9 @@ class Twitter {
       ];
     }
 
-    console.log("TweetId: ", filteredTweets[0].id);
-    console.log("Calling:", await this.getEmbed(filteredTweets[0].id));
-
     return filteredTweets.slice(-1 * total);
   }
-  async transformToEmbeds(tweets: TweetV2[]) {
+  async transformTweetsToEmbeds(tweets: TweetV2[]) {
     return tweets.map(async (tweet) => await this.getEmbed(tweet.id));
   }
 
@@ -167,6 +165,7 @@ class Twitter {
     return this.client.v1.oembedTweet(tweetId);
   }
 }
+
 let TwitterClient = new Twitter();
 
 export default TwitterClient;
