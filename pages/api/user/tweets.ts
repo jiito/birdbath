@@ -9,7 +9,6 @@ export default apiHandlerWithTwitter(async (req, res) => {
   if (!session) throw new Error("Not logged in!");
   const total = parseInt(req.query.total! as string);
   const filter = FilterFacotry.getFilter(req.query.filter! as string);
-  const maxResults = parseInt(req.query.maxResults! as string);
   const twitterId = await TwitterClient.getTwitterIdByUserId(
     session.userId as string
   );
@@ -33,10 +32,9 @@ export default apiHandlerWithTwitter(async (req, res) => {
     case "DELETE":
       const deleteTweets = await TwitterClient.deleteTweetsWithFilter(
         twitterId,
-        maxResults,
+        total,
         filter
       );
-      console.log(deleteTweets);
       res.json({ ok: true, tweets: deleteTweets });
   }
 });
