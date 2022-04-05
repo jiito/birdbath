@@ -18,20 +18,30 @@ class JobService {
     // needed to throttle the jobs
     this.queueScheduler = new QueueScheduler(name);
 
-    this.worker = new Worker(name, async (job) => {
-      // TODO: find a better place for the worker job processing
-      switch (job.name) {
-        case "deleteTweet":
-          const tweet = job.data as TweetV2;
-          const res = await TwitterClient.deleteTweetById(tweet.id);
-          res.deleted
-            ? console.log(
-                "[Worker]\u001b[31mCOMPLETE:\u001b[39m deleted tweet with id: ",
-                res.id
-              )
-            : console.log("[Worker] FAIL: Delete tweet with ID: ", res.id);
+    this.worker = new Worker(
+      name,
+      async (job) => {
+        // TODO: find a better place for the worker job processing
+        switch (job.name) {
+          case "deleteTweet":
+            const tweet = job.data as TweetV2;
+            const res = await TwitterClient.deleteTweetById(tweet.id);
+            res.deleted
+              ? console.log(
+                  "[Worker]\u001b[31mCOMPLETE:\u001b[39m deleted tweet with id: ",
+                  res.id
+                )
+              : console.log("[Worker] FAIL: Delete tweet with ID: ", res.id);
+        }
+      },
+      {
+        limiter: {
+          groupKey: limiterKey!,
+          max: 3,
+          duration: 1000 * 60 * 15,
+        },
       }
-    });
+    );
     this.startWorker();
   }
 
@@ -57,7 +67,7 @@ class JobService {
 
 export class JobQueues {
   private static mapping: Map<QUEUES, JobService> = new Map([
-    [QUEUES.DELETE_TWEETS, new JobService(QUEUES.DELETE_TWEETS, "userId")],
+    [QUEUES.DELETE_TWEETS, new JobService(QUEUES.DELETE_TWEETS, "author_id")],
   ]);
 
   public static get(queue: QUEUES): JobService {

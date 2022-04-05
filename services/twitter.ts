@@ -53,6 +53,7 @@ class Twitter {
     return this.client.v2.userTimeline(id, {
       "tweet.fields": ["public_metrics"],
       "user.fields": ["id"],
+      expansions: ["author_id"],
       max_results,
     });
   };
@@ -117,7 +118,6 @@ class Twitter {
       Math.min(perPage, upTo),
       filter
     );
-    console.log("tweetPage: ", tweetPage);
 
     await this.addTweetsToDeleteQueue(tweetPage);
 
@@ -161,7 +161,6 @@ class Twitter {
   }
 
   async getEmbed(tweetId: string) {
-    console.log(tweetId);
     return this.client.v1.oembedTweet(tweetId);
   }
 }
