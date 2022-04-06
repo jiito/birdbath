@@ -1,3 +1,4 @@
+import { Button } from "components/Button";
 import Layout from "components/Layout";
 import Tweet from "components/Tweet";
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -48,7 +49,7 @@ const BathPage = () => {
   return (
     <Layout>
       <div className="max-w-2xl mx-auto my-20 ">
-        <div className="p-1 rounded-md bg-gradient-to-bl from-green-300 via-blue-500 to-purple-600">
+        <div className="p-1 rounded-md ">
           <div className="flex flex-col items-start px-12 py-8 space-y-4 bg-white rounded form-container">
             <div className="flex space-x-4 text-lg font-semibold">
               <div>delete</div>
@@ -83,20 +84,17 @@ const BathPage = () => {
               />
             </div>
             {/* TODO: Abstract this into a fun button with different text for submission */}
-            <div className="flex flex-row">
-              <button
-                className=" text-gray-50 py-1.5 px-3 mr-4 rounded bg-gradient-to-bl from-green-300 via-blue-500 to-purple-600"
+            <div className="flex flex-row space-x-2">
+              <Button
+                styleType="primary"
                 disabled={!userId}
                 onClick={() => tweetFetch()}
               >
                 let's see the damage
-              </button>
-              <button
-                onClick={() => deleteTweets()}
-                className=" cursor-pointer rounded text-red-600 py-1.5 px-3 border-red-600 border"
-              >
+              </Button>
+              <Button styleType="secondary" onClick={() => deleteTweets()}>
                 don't look back
-              </button>
+              </Button>
             </div>
           </div>
         </div>
