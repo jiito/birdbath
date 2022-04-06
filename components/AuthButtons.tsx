@@ -20,7 +20,7 @@ const SignIn = () => {
     <>
       <button
         className="flex items-center px-4 py-2 mt-8 space-x-2 text-white bg-blue-400 rounded"
-        onClick={() => signIn()}
+        onClick={() => signIn("twitter")}
       >
         <FiTwitter />
         <span>Sign in with Twitter</span>
