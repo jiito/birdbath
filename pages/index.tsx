@@ -19,7 +19,7 @@ const Home: NextPage = () => {
           <link rel="icon" href="/favicon.ico" />
         </Head>
 
-        <div className="flex flex-col items-center space-y-10 mt-52 ">
+        <div className="flex flex-col items-center px-10 space-y-10 text-center mt-52 ">
           <div className="text-6xl font-bold text-gray-100 title">
             Your account{" "}
             <span className="text-transparent bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 bg-clip-text">
@@ -34,7 +34,7 @@ const Home: NextPage = () => {
           </div>
 
           <Link href={"/bath"}>
-            <button className="p-4 text-gray-100 border border-gray-100 rounded">
+            <button className="p-4 text-gray-100 transition ease-in-out delay-75 border border-gray-100 rounded hover:border-blue-400">
               Give your twitter a bath
             </button>
           </Link>

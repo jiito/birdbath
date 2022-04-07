@@ -19,7 +19,7 @@ const SignIn = () => {
   return (
     <>
       <button
-        className="flex items-center px-4 py-2 mt-8 space-x-2 text-white bg-blue-400 rounded"
+        className="flex items-center px-4 py-2 space-x-2 text-white bg-blue-400 rounded"
         onClick={() => signIn("twitter")}
       >
         <FiTwitter />

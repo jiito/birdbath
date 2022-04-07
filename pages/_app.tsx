@@ -17,7 +17,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   }, []);
   return (
     <SessionProvider session={session}>
-      <Component {...pageProps} />
+      <html className="bg-slate-800">
+        <Component {...pageProps} />
+      </html>
     </SessionProvider>
   );
 }
