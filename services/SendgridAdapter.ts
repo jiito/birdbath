@@ -9,8 +9,8 @@ export class SendGridAdapter {
     const email = SendGridAdapter.service.send({
       from: "baldwin@birdbath.me",
       to: "benjamin.allanrahill@gmail.com",
-      subject: "Test Email",
-      text: "This is a test email",
+      subject,
+      text: message,
       html: "<p>This is a test email</p>",
     });
 

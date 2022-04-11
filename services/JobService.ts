@@ -1,16 +1,17 @@
 import { Queue, QueueScheduler, Worker } from "bullmq";
 import { TweetV2 } from "twitter-api-v2";
+import { SendGridAdapter } from "./SendgridAdapter";
 import TwitterClient from "./twitter";
 
 export enum QUEUES {
   DELETE_TWEETS = "twitter_deleteTweets",
 }
-
 class JobService {
   private queue: Queue;
   private worker: Worker<any, any, string>;
   private queueScheduler: QueueScheduler;
   constructor(name: string, limiterKey?: string) {
+    // TODO: move this to a static var in the class
     this.queue = new Queue(name, {
       limiter: { groupKey: limiterKey! },
     });
@@ -24,14 +25,8 @@ class JobService {
         // TODO: find a better place for the worker job processing
         switch (job.name) {
           case "deleteTweet":
-            const tweet = job.data as TweetV2;
+            const { tweet, num }: { tweet: TweetV2; num: number } = job.data;
             const res = await TwitterClient.deleteTweetById(tweet.id);
-            res.deleted
-              ? console.log(
-                  "[Worker]\u001b[31mCOMPLETE:\u001b[39m deleted tweet with id: ",
-                  res.id
-                )
-              : console.log("[Worker] FAIL: Delete tweet with ID: ", res.id);
         }
       },
       {
@@ -57,6 +52,18 @@ class JobService {
   startWorker() {
     this.worker.on("completed", (job) => {
       console.log(`${job.id} has completed!`);
+      switch (job.name) {
+        case "deleteTweet":
+          const { tweet, num }: { tweet: TweetV2; num: number } = job.data;
+          console.log(`Deleted tweet: ${tweet.id}`);
+          if (num === 1) {
+            console.log("Finished deleting tweets");
+            SendGridAdapter.sendEmail("Finished deleting tweets", "");
+          }
+          break;
+        default:
+          break;
+      }
     });
 
     this.worker.on("failed", (job, err) => {
@@ -67,7 +74,10 @@ class JobService {
 
 export class JobQueues {
   private static mapping: Map<QUEUES, JobService> = new Map([
-    [QUEUES.DELETE_TWEETS, new JobService(QUEUES.DELETE_TWEETS, "author_id")],
+    [
+      QUEUES.DELETE_TWEETS,
+      new JobService(QUEUES.DELETE_TWEETS, "tweet.author_id"),
+    ],
   ]);
 
   public static get(queue: QUEUES): JobService {

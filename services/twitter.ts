@@ -82,8 +82,11 @@ class Twitter {
   };
 
   addTweetsToDeleteQueue = async (tweets: TweetV2[]) => {
-    tweets.forEach((tweet) =>
-      JobQueues.get(QUEUES.DELETE_TWEETS).add("deleteTweet", tweet)
+    tweets.forEach((tweet, i) =>
+      JobQueues.get(QUEUES.DELETE_TWEETS).add("deleteTweet", {
+        tweet,
+        num: tweets.length - i,
+      })
     );
   };
 
