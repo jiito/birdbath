@@ -1,10 +1,12 @@
 import { Button } from "components/Button";
 import Layout from "components/Layout";
+import { DeleteTweetModal } from "components/Modals/DeleteTweetModal";
 import Tweet from "components/Tweet";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { OembedTweetV1Result, TweetV2 } from "twitter-api-v2";
+
 const BathPage = () => {
   const session = useSession();
   const [userId, setUserId] = useState<string>();
@@ -46,8 +48,23 @@ const BathPage = () => {
 
     loadScript("https://platform.twitter.com/widgets.js");
   }, [loadedTweets]);
+
+  const [deleteModal, setDeleteModal] = useState<boolean>(false);
+  const handleModalApprove = () => {
+    deleteTweets();
+    setDeleteModal(false);
+  };
+
   return (
     <Layout>
+      <DeleteTweetModal
+        hideModal={() => setDeleteModal(false)}
+        isOpen={deleteModal}
+        data={{
+          tweetCount: totalTweets ?? 0,
+        }}
+        onApprove={handleModalApprove}
+      />
       <div className="max-w-2xl mx-auto my-20 ">
         <div className="p-1 rounded-md ">
           <div className="flex flex-col items-start px-12 py-8 space-y-4 bg-white rounded form-container">
