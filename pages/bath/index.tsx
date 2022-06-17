@@ -90,10 +90,13 @@ const BathPage = () => {
                 disabled={!userId}
                 onClick={() => tweetFetch()}
               >
-                let's see the damage
+                let&apos;s see the damage
               </Button>
-              <Button styleType="secondary" onClick={() => deleteTweets()}>
-                don't look back
+              <Button
+                styleType="secondary"
+                onClick={() => setDeleteModal(true)}
+              >
+                don&apos;t look back
               </Button>
             </div>
           </div>
