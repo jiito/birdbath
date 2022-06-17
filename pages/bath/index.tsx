@@ -105,7 +105,7 @@ const BathPage = () => {
           {loadedTweets &&
             loadedTweets.map((t, i) => (
               <div
-                className="self-center w-full m-auto"
+                className="flex justify-center"
                 dangerouslySetInnerHTML={{ __html: t.html }}
                 key={i}
               />
